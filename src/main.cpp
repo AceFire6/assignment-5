@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstdint>
+#include "Audio.h"
 
 using namespace std;
 
@@ -15,6 +17,12 @@ int main(int argc,  const char* argv[]) {
             cout << "Unsupported bit count." << endl;
             return 0;
         }
+
+        typedef int8_t sampleRateType;
+        if (bitCount == 16) {
+            typedef int16_t sampleRateType;
+        }
+
         int numChannels = stoi(argv[6]);
         if (numChannels != 1 && numChannels != 2) {
             cout << "Unsupported channel count." << endl;
@@ -33,6 +41,7 @@ int main(int argc,  const char* argv[]) {
         string infile = "";
         if (op == "-add") {
             infile = argv[8 + mod];
+            string infile2 = argv[9 + mod];
         } else if (op == "-cut") {
             int r1 = stoi(argv[8 + mod]);
             int r2 = stoi(argv[9 + mod]);
