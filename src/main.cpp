@@ -64,6 +64,11 @@ int main(int argc,  const char* argv[]) {
             infile = argv[8 + mod];
         } else if (op == "-rms") {
             infile = argv[8 + mod];
+            if (numChannels == 1) {
+                MLLJET001::Audio<sampleRateType, 1> audio1(infile);
+            } else {
+                MLLJET001::Audio<sampleRateType, 2> audio1(infile);
+            }
         } else if (op == "-norm") {
             int r1 = stoi(argv[8 + mod]);
             int r2 = stoi(argv[9 + mod]);
