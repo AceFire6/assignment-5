@@ -5,7 +5,7 @@
 using namespace std;
 
 int main(int argc,  const char* argv[]) {
-    if (argc < 9) {
+    if (argc < 7) {
         cout << "Too few arguments." << endl;
         return 0;
     }
@@ -65,9 +65,9 @@ int main(int argc,  const char* argv[]) {
         } else if (op == "-rms") {
             infile = argv[8 + mod];
             if (numChannels == 1) {
-                MLLJET001::Audio<sampleRateType, 1> audio1(infile);
+                MLLJET001::Audio<sampleRateType, 1> audio1(infile, sampleRate);
             } else {
-                MLLJET001::Audio<sampleRateType, 2> audio1(infile);
+                MLLJET001::Audio<sampleRateType, 2> audio1(infile, sampleRate);
             }
         } else if (op == "-norm") {
             int r1 = stoi(argv[8 + mod]);

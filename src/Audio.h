@@ -12,21 +12,15 @@
 
 namespace MLLJET001 {
     template <typename T, int numChannels> class Audio {
-    protected:
-        int bitSize;
-    public:
-        Audio() {}
-    };
-
-
-    template <typename T> class Audio<T, 1> {
     private:
         std::vector<T> audioData;
         int bitSize;
+        int sampleRate;
+        double duration;
     public:
-        Audio() {}
-        Audio(std::string file) {
-            this->bitSize = (int) (sizeof(T) * 8);
+        Audio(std::string file, int sampleRate) {
+            this->bitSize = (int) sizeof(T);
+            this->sampleRate = sampleRate;
             std::cout << "No Pair" << std::endl;
             readFile(file);
         }
@@ -37,9 +31,19 @@ namespace MLLJET001 {
             if (infile.is_open()) {
                 infile.seekg (0, infile.end);
                 long length = infile.tellg();
-                infile.seekg (0, infile.beg);
-            }
+                duration = (length / bitSize) / sampleRate;
 
+                infile.seekg (0, infile.beg);
+
+                float * temp = new float[length / bitSize];
+                infile.read((char *) temp, length / bitSize);
+
+                audioData.resize((unsigned long) (length / bitSize));
+                for (int i = 0; i < length / bitSize; ++i) {
+                    audioData[i] = temp[i];
+                }
+                delete [] temp;
+            }
             infile.close();
         }
 
@@ -54,8 +58,10 @@ namespace MLLJET001 {
     private:
         std::vector<std::pair<T, T>> audioData;
         int bitSize;
+        int sampleRate;
     public:
-        Audio(std::string file) {
+        Audio(std::string file, int sampleRate) {
+            this->sampleRate = sampleRate;
             this->bitSize = (int) (sizeof(T) * 8);
             std::cout << "Pair" << std::endl;
         }
