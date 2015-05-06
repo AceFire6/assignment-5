@@ -66,8 +66,11 @@ int main(int argc,  const char* argv[]) {
             infile = argv[8 + mod];
             if (numChannels == 1) {
                 MLLJET001::Audio<sampleRateType, 1> audio1(infile, sampleRate);
+                cout << audio1.calculateRMS() << endl;
             } else {
                 MLLJET001::Audio<sampleRateType, 2> audio1(infile, sampleRate);
+                std::pair<float, float> rms = audio1.calculateRMS();
+                cout << rms.first << " " << rms.second << endl;
             }
         } else if (op == "-norm") {
             int r1 = stoi(argv[8 + mod]);

@@ -31,15 +31,16 @@ namespace MLLJET001 {
             if (infile.is_open()) {
                 infile.seekg (0, infile.end);
                 long length = infile.tellg();
-                duration = (length / bitSize) / sampleRate;
+                int numSamples = (int) (length / bitSize);
+                duration = numSamples / sampleRate;
 
                 infile.seekg (0, infile.beg);
 
-                float * temp = new float[length / bitSize];
-                infile.read((char *) temp, length / bitSize);
+                T * temp = new T[numSamples];
+                infile.read((char *)temp, numSamples);
 
-                audioData.resize((unsigned long) (length / bitSize));
-                for (int i = 0; i < length / bitSize; ++i) {
+                audioData.resize((unsigned long) (numSamples));
+                for (int i = 0; i < numSamples; ++i) {
                     audioData[i] = temp[i];
                 }
                 delete [] temp;
@@ -48,8 +49,9 @@ namespace MLLJET001 {
         }
 
         double calculateRMS() {
-            double inverseSize = 1 / audioData.size();
-            return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0, [] (int a, T x) {return x * x;}));
+            double inverseSize = 1 / (float)audioData.size();
+            return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
+                                                           [] (T a, T x) {return ((int)a + (x * x));}));
         }
     };
 
