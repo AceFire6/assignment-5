@@ -56,6 +56,15 @@ int main(int argc,  const char* argv[]) {
         } else if (op == "-cat") {
             infile = argv[8 + mod];
             string infile2 = argv[9 + mod];
+            if (numChannels == 1) {
+                MLLJET001::Audio<sampleRateType, 1> audio1(infile, sampleRate);
+                MLLJET001::Audio<sampleRateType, 1> audio2(infile2, sampleRate);
+                (audio1 | audio2).saveFile(outfileName);
+            } else {
+                MLLJET001::Audio<sampleRateType, 2> audio1(infile, sampleRate);
+                MLLJET001::Audio<sampleRateType, 2> audio2(infile2, sampleRate);
+                (audio1 | audio2).saveFile(outfileName);
+            }
         } else if (op == "-v") {
             int r1 = stoi(argv[8 + mod]);
             int r2 = stoi(argv[9 + mod]);
