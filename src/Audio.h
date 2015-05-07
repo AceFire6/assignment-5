@@ -44,6 +44,8 @@ namespace MLLJET001 {
                     audioData[i] = temp[i];
                 }
                 delete [] temp;
+            } else {
+                std::cout << "Couldn't open file: " << file << std::endl;
             }
             infile.close();
         }
@@ -57,6 +59,8 @@ namespace MLLJET001 {
                 for (auto data : audioData) {
                     outfile << data;
                 }
+            } else {
+                std::cout << "Couldn't save file: " << fileName << std::endl;
             }
             outfile.close();
         }
