@@ -48,6 +48,19 @@ namespace MLLJET001 {
             infile.close();
         }
 
+        void saveFile(std::string file) {
+            std::string fileName = file + "_" + std::to_string(sampleRate) + "_"
+                                           + std::to_string(bitSize * 8) + "_mono.raw";
+            std::ofstream outfile(fileName);
+
+            if (outfile.is_open()) {
+                for (auto data : audioData) {
+                    outfile << data;
+                }
+            }
+            outfile.close();
+        }
+
         double calculateRMS() {
             double inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
