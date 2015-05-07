@@ -65,6 +65,11 @@ namespace MLLJET001 {
             outfile.close();
         }
 
+        Audio & operator|(const Audio & rhs) {
+            audioData.insert(audioData.end(), rhs.audioData.begin(), rhs.audioData.end());
+            return *this;
+        }
+
         double calculateRMS() {
             double inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
@@ -96,6 +101,11 @@ namespace MLLJET001 {
                             });
             rms = std::make_pair(std::sqrt(rms.first * inverseSize), std::sqrt(rms.second * inverseSize));
             return rms;
+        }
+
+        Audio & operator|(const Audio & rhs) {
+            audioData.insert(audioData.end(), rhs.audioData.begin(), rhs.audioData.end());
+            return *this;
         }
     };
 }
