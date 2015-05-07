@@ -9,7 +9,6 @@
 #include <numeric>
 #include <cmath>
 
-
 namespace MLLJET001 {
     template <typename T, int numChannels> class Audio {
     private:
@@ -67,6 +66,13 @@ namespace MLLJET001 {
 
         Audio & operator|(const Audio & rhs) {
             audioData.insert(audioData.end(), rhs.audioData.begin(), rhs.audioData.end());
+            return *this;
+        }
+
+        Audio & operator*(const std::pair<float, float> & volFactor) {
+            for (int i = 0; i < audioData.size(); ++i) {
+                audioData[i] *= volFactor.first;
+            };
             return *this;
         }
 
@@ -148,6 +154,14 @@ namespace MLLJET001 {
 
         Audio & operator|(const Audio & rhs) {
             audioData.insert(audioData.end(), rhs.audioData.begin(), rhs.audioData.end());
+            return *this;
+        }
+
+        Audio & operator*(const std::pair<float, float> & volFactor) {
+            for (int i = 0; i < audioData.size(); ++i) {
+                audioData[i] = std::make_pair(audioData[i].first * volFactor.first,
+                                              audioData[i].second * volFactor.second);
+            }
             return *this;
         }
     };
