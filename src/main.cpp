@@ -66,9 +66,18 @@ int main(int argc,  const char* argv[]) {
                 (audio1 | audio2).saveFile(outfileName);
             }
         } else if (op == "-v") {
-            int r1 = stoi(argv[8 + mod]);
-            int r2 = stoi(argv[9 + mod]);
+            float r1 = stof(argv[8 + mod]);
+            float r2 = stof(argv[9 + mod]);
             infile = argv[10 + mod];
+            if (numChannels == 1) {
+                MLLJET001::Audio<sampleRateType, 1> audio1(infile, sampleRate);
+                (audio1 * std::make_pair(r1, r2));
+                audio1.saveFile(outfileName);
+            } else {
+                MLLJET001::Audio<sampleRateType, 2> audio1(infile, sampleRate);
+                (audio1 * std::make_pair(r1, r2));
+                audio1.saveFile(outfileName);
+            }
         } else if (op == "-rev") {
             infile = argv[8 + mod];
         } else if (op == "-rms") {
