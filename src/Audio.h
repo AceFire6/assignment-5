@@ -83,11 +83,54 @@ namespace MLLJET001 {
         std::vector<std::pair<T, T>> audioData;
         int bitSize;
         int sampleRate;
+        double duration;
     public:
         Audio(std::string file, int sampleRate) {
             this->sampleRate = sampleRate;
-            this->bitSize = (int) (sizeof(T) * 8);
-            std::cout << "Pair" << std::endl;
+            this->bitSize = (int) sizeof(T);
+            std::cout << "Pair: " << file << std::endl;
+            readFile(file);
+        }
+
+        void readFile(std::string file) {
+            std::ifstream infile(file);
+
+            if (infile.is_open()) {
+                infile.seekg (0, infile.end);
+                long length = infile.tellg();
+                int numSamples = (int) (length / (bitSize * 2));
+                std::cout << numSamples << std::endl;
+                duration = numSamples / sampleRate;
+
+                infile.seekg (0, infile.beg);
+
+                T * temp = new T[numSamples * 2];
+                infile.read((char *)temp, numSamples * 2);
+
+                audioData.resize((unsigned long) (numSamples));
+                for (int i = 0; i < numSamples; ++i) {
+                    audioData[i] = std::make_pair(temp[i], temp[i+1]);
+                }
+                delete [] temp;
+            } else {
+                std::cout << "Couldn't open file: " << file << std::endl;
+            }
+            infile.close();
+        }
+
+        void saveFile(std::string file) {
+            std::string fileName = file + "_" + std::to_string(sampleRate) + "_"
+                                   + std::to_string(bitSize * 8) + "_stereo.raw";
+            std::ofstream outfile(fileName);
+
+            if (outfile.is_open()) {
+                for (auto data : audioData) {
+                    outfile << data.first << data.second;
+                }
+            } else {
+                std::cout << "Couldn't save file: " << fileName << std::endl;
+            }
+            outfile.close();
         }
 
         std::pair<double, double> calculateRMS() {
