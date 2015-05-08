@@ -61,18 +61,23 @@ int main(int argc,  const char* argv[]) {
         } else if (op == "-cut") {
             int r1 = stoi(argv[8 + mod]);
             int r2 = stoi(argv[9 + mod]);
+            std::pair<int, int> excludeTime = std::make_pair(r1, r2);
             infile = argv[10 + mod];
             if (numChannels == 1) {
                 if (bitCount == 16) {
                     MLLJET001::Audio<int16_t, 1> audio(infile, sampleRate);
+                    (audio ^ excludeTime).saveFile(outfileName);
                 } else {
                     MLLJET001::Audio<int8_t, 1> audio(infile, sampleRate);
+                    (audio ^ excludeTime).saveFile(outfileName);
                 }
             } else {
                 if (bitCount == 16) {
                     MLLJET001::Audio<int16_t, 2> audio(infile, sampleRate);
+                    (audio ^ excludeTime).saveFile(outfileName);
                 } else {
                     MLLJET001::Audio<int8_t, 2> audio(infile, sampleRate);
+                    (audio ^ excludeTime).saveFile(outfileName);
                 }
             }
         } else if (op == "-radd") {
