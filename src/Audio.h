@@ -76,6 +76,21 @@ namespace MLLJET001 {
             return *this;
         }
 
+        T clamp_sample(int sample) {
+            if (bitSize == 1) {
+                return (sample > INT8_MAX) ? INT8_MAX : sample;
+            } else {
+                return (sample > INT16_MAX) ? INT16_MAX : sample;
+            }
+        }
+
+        Audio & operator+(const Audio & rhs) {
+            for (int i = 0; i < audioData.size(); ++i) {
+                audioData[i] = clamp_sample(audioData[i] + rhs.audioData[i]);
+            }
+            return *this;
+        }
+
         double calculateRMS() {
             double inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
@@ -161,6 +176,23 @@ namespace MLLJET001 {
             for (int i = 0; i < audioData.size(); ++i) {
                 audioData[i] = std::make_pair(audioData[i].first * volFactor.first,
                                               audioData[i].second * volFactor.second);
+            }
+            return *this;
+        }
+
+        T clamp_sample(int sample) {
+            if (bitSize == 1) {
+                return (sample > INT8_MAX) ? INT8_MAX : sample;
+            } else {
+                return (sample > INT16_MAX) ? INT16_MAX : sample;
+            }
+        }
+
+        Audio & operator+(const Audio & rhs) {
+            for (int i = 0; i < audioData.size(); ++i) {
+                T left = clamp_sample(audioData[i].first + rhs.audioData[i].first);
+                T right = clamp_sample(audioData[i].second + rhs.audioData[i].second);
+                audioData[i] = std::make_pair(left, right);
             }
             return *this;
         }
