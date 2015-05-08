@@ -91,6 +91,17 @@ namespace MLLJET001 {
             return *this;
         }
 
+        Audio & operator^(const std::pair<int, int> & exclTime) {
+            std::vector<T> newAudio;
+            for (int i = 0; i < audioData.size(); ++i) {
+                if (i < exclTime.first || i > exclTime.second) {
+                    newAudio.push_back(audioData[i]);
+                }
+            }
+            audioData = newAudio;
+            return *this;
+        }
+
         double calculateRMS() {
             double inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
@@ -109,6 +120,7 @@ namespace MLLJET001 {
         Audio(std::string file, int sampleRate) {
             this->sampleRate = sampleRate;
             this->bitSize = (int) sizeof(T);
+            std::cout << bitSize << std::endl;
             std::cout << "Pair: " << file << std::endl;
             readFile(file);
         }
@@ -194,6 +206,17 @@ namespace MLLJET001 {
                 T right = clamp_sample(audioData[i].second + rhs.audioData[i].second);
                 audioData[i] = std::make_pair(left, right);
             }
+            return *this;
+        }
+
+        Audio & operator^(const std::pair<int, int> & exclTime) {
+            std::vector<std::pair<T, T>> newAudio;
+            for (int i = 0; i < audioData.size(); ++i) {
+                if (i < exclTime.first || i > exclTime.second) {
+                    newAudio.push_back(audioData[i]);
+                }
+            }
+            audioData = newAudio;
             return *this;
         }
     };
