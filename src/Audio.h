@@ -8,6 +8,7 @@
 #include <fstream>
 #include <numeric>
 #include <cmath>
+#include <algorithm>
 
 namespace MLLJET001 {
     template <typename T, int numChannels> class Audio {
@@ -100,6 +101,10 @@ namespace MLLJET001 {
             }
             audioData = newAudio;
             return *this;
+        }
+
+        void reverse() {
+            std::reverse(audioData.begin(), audioData.end());
         }
 
         double calculateRMS() {
@@ -218,6 +223,10 @@ namespace MLLJET001 {
             }
             audioData = newAudio;
             return *this;
+        }
+
+        void reverse() {
+            std::reverse(audioData.begin(), audioData.end());
         }
     };
 }
