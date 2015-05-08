@@ -25,6 +25,40 @@ namespace MLLJET001 {
             readFile(file);
         }
 
+        ~Audio() = default;
+
+        // Copy Constructor
+        Audio(const Audio &rhs) {
+            this->sampleRate = rhs.sampleRate;
+            this->bitSize = rhs.bitSize;
+            this->duration = rhs.duration;
+            this->audioData = rhs.audioData;
+        }
+
+        // Move Constructor
+        Audio(Audio &&rhs) {
+            this->sampleRate = rhs.sampleRate;
+            this->bitSize = rhs.bitSize;
+            this->duration = rhs.duration;
+            this->audioData = std::move(rhs.audioData);
+        }
+
+        // Copy Assignment Operator
+        Audio operator=(const Audio<T, 1> &rhs) {
+            Audio<T, 1> temp(rhs);
+            *this = std::move(temp);
+            return *this;
+        }
+
+        // Move Assignment Operator
+        Audio operator=(Audio<T, 1> &&rhs) {
+            this->sampleRate = rhs.sampleRate;
+            this->duration = rhs.duration;
+            this->bitSize = rhs.bitSize;
+            this->audioData = std::move(rhs.audioData);
+            return *this;
+        }
+
         void readFile(std::string file) {
             std::ifstream infile(file);
 
@@ -128,6 +162,40 @@ namespace MLLJET001 {
             std::cout << bitSize << std::endl;
             std::cout << "Pair: " << file << std::endl;
             readFile(file);
+        }
+
+        ~Audio() = default;
+
+        // Copy Constructor
+        Audio(const Audio &rhs) {
+            this->sampleRate = rhs.sampleRate;
+            this->bitSize = rhs.bitSize;
+            this->duration = rhs.duration;
+            this->audioData = rhs.audioData;
+        }
+
+        // Move Constructor
+        Audio(Audio &&rhs) {
+            this->sampleRate = rhs.sampleRate;
+            this->bitSize = rhs.bitSize;
+            this->duration = rhs.duration;
+            this->audioData = std::move(rhs.audioData);
+        }
+
+        // Copy Assignment Operator
+        Audio operator=(const Audio<T, 2> &rhs) {
+            Audio<T, 2> temp(rhs);
+            *this = std::move(temp);
+            return *this;
+        }
+
+        // Move Assignment Operator
+        Audio operator=(Audio<T, 2> &&rhs) {
+            this->sampleRate = rhs.sampleRate;
+            this->duration = rhs.duration;
+            this->bitSize = rhs.bitSize;
+            this->audioData = std::move(rhs.audioData);
+            return *this;
         }
 
         void readFile(std::string file) {
