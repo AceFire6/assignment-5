@@ -208,14 +208,22 @@ int main(int argc,  const char* argv[]) {
             if (numChannels == 1) {
                 if (bitCount == 16) {
                     MLLJET001::Audio<int16_t, 1> audio(infile, sampleRate);
+                    audio.normalize(r1);
+                    audio.saveFile(outfileName);
                 } else {
                     MLLJET001::Audio<int8_t, 1> audio(infile, sampleRate);
+                    audio.normalize(r1);
+                    audio.saveFile(outfileName);
                 }
             } else {
                 if (bitCount == 16) {
                     MLLJET001::Audio<int16_t, 2> audio(infile, sampleRate);
+                    audio.normalize(r1, r2);
+                    audio.saveFile(outfileName);
                 } else {
                     MLLJET001::Audio<int8_t, 2> audio(infile, sampleRate);
+                    audio.normalize(r1, r2);
+                    audio.saveFile(outfileName);
                 }
             }
         } else if (op == "-fadein") {
