@@ -104,7 +104,7 @@ namespace MLLJET001 {
             return *this;
         }
 
-        T clamp_sample(int sample) {
+        T clamp_sample(T sample) {
             if (bitSize == 1) {
                 return (sample > INT8_MAX) ? INT8_MAX : sample;
             } else {
@@ -135,16 +135,34 @@ namespace MLLJET001 {
         }
 
         Audio & extractRange(int r1, int r2) {
-            Audio<T, 1> * newAudio = new Audio(*this);
+            Audio * newAudio = new Audio(*this);
             std::copy(audioData.begin() + r1, audioData.end() - r2, (*newAudio).audioData.begin());
             return *newAudio;
         }
 
-        double calculateRMS() {
-            double inverseSize = 1 / (float)audioData.size();
+        float calculateRMS() {
+            float inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
                                                            [] (T accum, T x) {return (accum + pow(x, 2));}));
         }
+
+        Audio & normalize(float rms) {
+            NormalFunctor func(calculateRMS(), rms);
+            Audio * newAudio = new Audio(*this);
+            std::transform(audioData.begin(), audioData.end(), newAudio->audioData.begin(), func);
+            return *newAudio;
+        }
+
+        class NormalFunctor {
+        public:
+            float currentRms;
+            float desiredRms;
+            NormalFunctor(float rmsCurrent, float rmsDesired): currentRms(rmsCurrent), desiredRms(rmsDesired) {}
+
+            T operator()(T inputAmp) {
+                return (T) (inputAmp * (desiredRms / currentRms));
+            }
+        };
     };
 
 
@@ -238,12 +256,12 @@ namespace MLLJET001 {
             outfile.close();
         }
 
-        std::pair<double, double> calculateRMS() {
-            std::pair<double, double> rms;
-            double inverseSize = 1 / (float) audioData.size();
+        std::pair<float, float> calculateRMS() {
+            std::pair<float, float> rms;
+            float inverseSize = 1 / (float) audioData.size();
 
-            rms = std::accumulate(audioData.begin(), audioData.end(), std::pair<double, double>(0, 0),
-                            [] (std::pair<double, double> accum, std::pair<T, T> x) {
+            rms = std::accumulate(audioData.begin(), audioData.end(), std::pair<float, float>(0, 0),
+                            [] (std::pair<float, float> accum, std::pair<T, T> x) {
                                 accum = std::make_pair(accum.first + (std::pow(x.first, 2)), accum.second + (std::pow(x.second, 2)));
                                 return accum;
                             });
@@ -264,7 +282,7 @@ namespace MLLJET001 {
             return *this;
         }
 
-        T clamp_sample(int sample) {
+        T clamp_sample(T sample) {
             if (bitSize == 1) {
                 return (sample > INT8_MAX) ? INT8_MAX : sample;
             } else {
@@ -301,6 +319,26 @@ namespace MLLJET001 {
             std::copy(audioData.begin() + r1, audioData.end() - r2, (*newAudio).audioData.begin());
             return *newAudio;
         }
+
+        Audio & normalize(float rmsL, float rmsR) {
+            NormalFunctor func(calculateRMS(), std::make_pair(rmsL, rmsR));
+            Audio<T, 2> * newAudio = new Audio(*this);
+            std::transform(audioData.begin(), audioData.end(), newAudio->audioData.begin(), func);
+            return *newAudio;
+        }
+
+        class NormalFunctor {
+        public:
+            std::pair<float, float> currentRms;
+            std::pair<float, float> desiredRms;
+            NormalFunctor(std::pair<float, float> rmsCurrent, std::pair<float, float> rmsDesired):
+                    currentRms(rmsCurrent), desiredRms(rmsDesired) {}
+
+            std::pair<T, T> operator()(std::pair<T, T> inputAmp) {
+                return std::make_pair((T) (inputAmp.first * (desiredRms.first / currentRms.first)),
+                                      (T) (inputAmp.second * (desiredRms.second / currentRms.second)));
+            }
+        };
     };
 }
 
