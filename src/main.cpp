@@ -185,14 +185,20 @@ int main(int argc,  const char* argv[]) {
             if (numChannels == 1) {
                 if (bitCount == 16) {
                     MLLJET001::Audio<int16_t, 1> audio1(infile, sampleRate);
+                    cout << "RMS of " << infile << " = " << audio1.calculateRMS() << endl;
                 } else {
                     MLLJET001::Audio<int8_t, 1> audio1(infile, sampleRate);
+                    cout << "RMS of " << infile << " = " << audio1.calculateRMS() << endl;
                 }
             } else {
                 if (bitCount == 16) {
                     MLLJET001::Audio<int16_t, 2> audio1(infile, sampleRate);
+                    cout << "Left RMS of " << infile << " = " << audio1.calculateRMS().first << endl;
+                    cout << "Right RMS of " << infile << " = " << audio1.calculateRMS().second << endl;
                 } else {
                     MLLJET001::Audio<int8_t, 2> audio1(infile, sampleRate);
+                    cout << "Left RMS of " << infile << " = " << audio1.calculateRMS().first << endl;
+                    cout << "Right RMS of " << infile << " = " << audio1.calculateRMS().second << endl;
                 }
             }
         } else if (op == "-norm") {
