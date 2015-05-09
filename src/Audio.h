@@ -60,24 +60,17 @@ namespace MLLJET001 {
         }
 
         void readFile(std::string file) {
-            std::ifstream infile(file);
+            std::ifstream infile(file, std::ios::binary | std::ios::in);
 
             if (infile.is_open()) {
                 infile.seekg (0, infile.end);
                 long length = infile.tellg();
-                int numSamples = (int) (length / bitSize);
-                duration = numSamples / sampleRate;
-
-                infile.seekg (0, infile.beg);
-
-                T * temp = new T[numSamples];
-                infile.read((char *)temp, numSamples);
+                int numSamples = (int) (length / (bitSize * numChannels));
+                duration = numSamples / (float) sampleRate;
 
                 audioData.resize((unsigned long) (numSamples));
-                for (int i = 0; i < numSamples; ++i) {
-                    audioData[i] = temp[i];
-                }
-                delete [] temp;
+                infile.seekg (0, infile.beg);
+                infile.read((char *)&(audioData[0]), numSamples);
             } else {
                 std::cout << "Couldn't open file: " << file << std::endl;
             }
@@ -87,7 +80,7 @@ namespace MLLJET001 {
         void saveFile(std::string file) {
             std::string fileName = file + "_" + std::to_string(sampleRate) + "_"
                                            + std::to_string(bitSize * 8) + "_mono.raw";
-            std::ofstream outfile(fileName);
+            std::ofstream outfile(fileName, std::ios::binary | std::ios::out);
 
             if (outfile.is_open()) {
                 for (auto data : audioData) {
@@ -139,6 +132,12 @@ namespace MLLJET001 {
 
         void reverse() {
             std::reverse(audioData.begin(), audioData.end());
+        }
+
+        Audio & extractRange(int r1, int r2) {
+            Audio<T, 1> * newAudio = new Audio(*this);
+            std::copy(audioData.begin() + r1, audioData.end() - r2, (*newAudio).audioData.begin());
+            return *newAudio;
         }
 
         double calculateRMS() {
@@ -295,6 +294,12 @@ namespace MLLJET001 {
 
         void reverse() {
             std::reverse(audioData.begin(), audioData.end());
+        }
+
+        Audio & extractRange(int r1, int r2) {
+            Audio<T, 2> * newAudio = new Audio(*this);
+            std::copy(audioData.begin() + r1, audioData.end() - r2, (*newAudio).audioData.begin());
+            return *newAudio;
         }
     };
 }
