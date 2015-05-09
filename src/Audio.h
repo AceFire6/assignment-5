@@ -143,7 +143,7 @@ namespace MLLJET001 {
         double calculateRMS() {
             double inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
-                                                           [] (T a, T x) {return ((int)a + (x * x));}));
+                                                           [] (T accum, T x) {return (accum + pow(x, 2));}));
         }
     };
 
@@ -240,7 +240,7 @@ namespace MLLJET001 {
 
         std::pair<double, double> calculateRMS() {
             std::pair<double, double> rms;
-            double inverseSize = 1 / audioData.size();
+            double inverseSize = 1 / (float) audioData.size();
 
             rms = std::accumulate(audioData.begin(), audioData.end(), std::pair<double, double>(0, 0),
                             [] (std::pair<double, double> accum, std::pair<T, T> x) {
