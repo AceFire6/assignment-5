@@ -14,18 +14,20 @@ namespace MLLJET001 {
     template <typename T, int numChannels> class Audio {
     private:
         std::vector<T> audioData;
-        int bitSize;
+        int tSize;
         int sampleRate;
         double duration;
     public:
+        // Constructor for testing.
         Audio(std::vector<T> & data, int sampleRate) {
-            this->bitSize = (int) sizeof(T);
+            this->tSize = (int) sizeof(T);
             this->sampleRate = sampleRate;
             audioData = data;
         }
 
+        // Parametrized constructor
         Audio(std::string file, int sampleRate) {
-            this->bitSize = (int) sizeof(T);
+            this->tSize = (int) sizeof(T);
             this->sampleRate = sampleRate;
             std::cout << "No Pair" << std::endl;
             readFile(file);
@@ -36,7 +38,7 @@ namespace MLLJET001 {
         // Copy Constructor
         Audio(const Audio &rhs) {
             this->sampleRate = rhs.sampleRate;
-            this->bitSize = rhs.bitSize;
+            this->tSize = rhs.tSize;
             this->duration = rhs.duration;
             this->audioData = rhs.audioData;
         }
@@ -44,7 +46,7 @@ namespace MLLJET001 {
         // Move Constructor
         Audio(Audio &&rhs) {
             this->sampleRate = rhs.sampleRate;
-            this->bitSize = rhs.bitSize;
+            this->tSize = rhs.tSize;
             this->duration = rhs.duration;
             this->audioData = std::move(rhs.audioData);
         }
@@ -60,11 +62,12 @@ namespace MLLJET001 {
         Audio operator=(Audio<T, 1> &&rhs) {
             this->sampleRate = rhs.sampleRate;
             this->duration = rhs.duration;
-            this->bitSize = rhs.bitSize;
+            this->tSize = rhs.tSize;
             this->audioData = std::move(rhs.audioData);
             return *this;
         }
 
+        // Reads in the file specified. Handles mono 8bit or 16bit reading.
         void readFile(std::string file) {
             std::ifstream infile(file, std::ios::binary | std::ios::in);
 
@@ -73,14 +76,14 @@ namespace MLLJET001 {
                 long length = infile.tellg();
                 infile.seekg (0, infile.beg);
 
-                int numSamples = (int) (length / (bitSize * numChannels));
+                int numSamples = (int) (length / (tSize * numChannels));
                 duration = numSamples / (float) sampleRate;
 
                 audioData.resize((unsigned long) (numSamples));
 
                 for (int i = 0; i < audioData.size(); ++i) {
-                    char buffer[bitSize];
-                    infile.read(buffer, bitSize);
+                    char buffer[tSize];
+                    infile.read(buffer, tSize);
                     audioData[i] = *(T *)buffer;
                 }
             } else {
@@ -89,24 +92,29 @@ namespace MLLJET001 {
             infile.close();
         }
 
+        // Saves the file with the name given as the base.
         void saveFile(std::string file) {
             std::string fileName = file + "_" + std::to_string(sampleRate) + "_"
-                                           + std::to_string(bitSize * 8) + "_mono.raw";
+                                           + std::to_string(tSize * 8) + "_mono.raw";
             std::ofstream outfile(fileName, std::ios::binary | std::ios::out);
 
             if (outfile.is_open()) {
-                outfile.write((char *)&audioData[0], audioData.size() * bitSize);
+                outfile.write((char *)&audioData[0], audioData.size() * tSize);
             } else {
                 std::cout << "Couldn't save file: " << fileName << std::endl;
             }
             outfile.close();
         }
 
+        // Overloads pipe operator to implement concatenation.
         Audio & operator|(const Audio & rhs) {
             audioData.insert(audioData.end(), rhs.audioData.begin(), rhs.audioData.end());
             return *this;
         }
 
+        // Overloads * operator to work on pairs for floats that contain
+        // the values that the left and right channel of the audio should
+        // be multiplied by.
         Audio & operator*(const std::pair<float, float> & volFactor) {
             for (int i = 0; i < audioData.size(); ++i) {
                 audioData[i] *= volFactor.first;
@@ -114,14 +122,17 @@ namespace MLLJET001 {
             return *this;
         }
 
+        // Helper function that clamps the given sample to its maximum value.
         T clamp_sample(T sample) {
-            if (bitSize == 1) {
+            if (tSize == 1) {
                 return (sample > INT8_MAX) ? INT8_MAX : sample;
             } else {
                 return (sample > INT16_MAX) ? INT16_MAX : sample;
             }
         }
 
+        // Overloads + operator. Adds two equally sized audio files with the
+        // same tSize and number of samples.
         Audio & operator+(const Audio & rhs) {
             for (int i = 0; i < audioData.size(); ++i) {
                 audioData[i] = clamp_sample(audioData[i] + rhs.audioData[i]);
@@ -129,6 +140,8 @@ namespace MLLJET001 {
             return *this;
         }
 
+        // Overload ^ operator to be used for cutting a selection of samples
+        // from the sound file.
         Audio & operator^(const std::pair<int, int> & exclTime) {
             std::vector<T> newAudio;
             for (int i = 0; i < audioData.size(); ++i) {
@@ -140,14 +153,18 @@ namespace MLLJET001 {
             return *this;
         }
 
+        // Reverses the audioData vector, reversing the sound file.
         void reverse() {
             std::reverse(audioData.begin(), audioData.end());
         }
 
+        // Returns the audioData vector.
         std::vector<T> & getAudioData() {
             return audioData;
         }
 
+        // Extracts a range from the current audio file.
+        // Returns a new audio file.
         Audio & extractRange(int r1, int r2) {
             Audio * newAudio = new Audio(*this);
             newAudio->audioData.clear();
@@ -156,12 +173,14 @@ namespace MLLJET001 {
             return *newAudio;
         }
 
+        // Returns the RMS of the audio file.
         float calculateRMS() {
             float inverseSize = 1 / (float)audioData.size();
             return std::sqrt(inverseSize * std::accumulate(audioData.begin(), audioData.end(), 0,
                                                            [] (T accum, T x) {return (accum + pow(x, 2));}));
         }
 
+        // Normalizes the audio file to some given RMS value.
         Audio & normalize(float rms) {
             NormalFunctor func(calculateRMS(), rms);
             Audio * newAudio = new Audio(*this);
@@ -169,6 +188,7 @@ namespace MLLJET001 {
             return *newAudio;
         }
 
+        // Inner functor class used to calculate the normal values.
         class NormalFunctor {
         public:
             float currentRms;
@@ -185,15 +205,20 @@ namespace MLLJET001 {
     template <typename T> class Audio<T, 2> {
     private:
         std::vector<std::pair<T, T>> audioData;
-        int bitSize;
+        int tSize;
         int sampleRate;
         double duration;
     public:
+        // Constructor for testing.
+        Audio(std::vector<T> & data, int sampleRate) {
+            this->tSize = (int) sizeof(T);
+            this->sampleRate = sampleRate;
+            audioData = data;
+        }
+
         Audio(std::string file, int sampleRate) {
             this->sampleRate = sampleRate;
-            this->bitSize = (int) sizeof(T);
-            std::cout << bitSize << std::endl;
-            std::cout << "Pair: " << file << std::endl;
+            this->tSize = (int) sizeof(T);
             readFile(file);
         }
 
@@ -202,7 +227,7 @@ namespace MLLJET001 {
         // Copy Constructor
         Audio(const Audio &rhs) {
             this->sampleRate = rhs.sampleRate;
-            this->bitSize = rhs.bitSize;
+            this->tSize = rhs.tSize;
             this->duration = rhs.duration;
             this->audioData = rhs.audioData;
         }
@@ -210,7 +235,7 @@ namespace MLLJET001 {
         // Move Constructor
         Audio(Audio &&rhs) {
             this->sampleRate = rhs.sampleRate;
-            this->bitSize = rhs.bitSize;
+            this->tSize = rhs.tSize;
             this->duration = rhs.duration;
             this->audioData = std::move(rhs.audioData);
         }
@@ -226,7 +251,7 @@ namespace MLLJET001 {
         Audio operator=(Audio<T, 2> &&rhs) {
             this->sampleRate = rhs.sampleRate;
             this->duration = rhs.duration;
-            this->bitSize = rhs.bitSize;
+            this->tSize = rhs.tSize;
             this->audioData = std::move(rhs.audioData);
             return *this;
         }
@@ -239,16 +264,16 @@ namespace MLLJET001 {
                 long length = infile.tellg();
                 infile.seekg (0, infile.beg);
 
-                int numSamples = (int) (length / (bitSize * 2));
+                int numSamples = (int) (length / (tSize * 2));
                 std::cout << numSamples << std::endl;
                 duration = numSamples / sampleRate;
 
                 audioData.resize((unsigned long) (numSamples));
                 for (int i = 0; i < audioData.size(); ++i) {
-                    char buffer[bitSize];
-                    infile.read(buffer, bitSize);
-                    char buffer2[bitSize];
-                    infile.read(buffer2, bitSize);
+                    char buffer[tSize];
+                    infile.read(buffer, tSize);
+                    char buffer2[tSize];
+                    infile.read(buffer2, tSize);
                     audioData[i] = std::make_pair(*(T *)buffer, *(T *)buffer2);
                 }
             } else {
@@ -259,13 +284,13 @@ namespace MLLJET001 {
 
         void saveFile(std::string file) {
             std::string fileName = file + "_" + std::to_string(sampleRate) + "_"
-                                   + std::to_string(bitSize * 8) + "_stereo.raw";
+                                   + std::to_string(tSize * 8) + "_stereo.raw";
             std::ofstream outfile(fileName);
 
             if (outfile.is_open()) {
                 for (auto data : audioData) {
-                    outfile.write((char *)&data.first, bitSize);
-                    outfile.write((char *)&data.second, bitSize);
+                    outfile.write((char *)&data.first, tSize);
+                    outfile.write((char *)&data.second, tSize);
                 }
             } else {
                 std::cout << "Couldn't save file: " << fileName << std::endl;
@@ -300,7 +325,7 @@ namespace MLLJET001 {
         }
 
         T clamp_sample(T sample) {
-            if (bitSize == 1) {
+            if (tSize == 1) {
                 return (sample > INT8_MAX) ? INT8_MAX : sample;
             } else {
                 return (sample > INT16_MAX) ? INT16_MAX : sample;
