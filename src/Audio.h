@@ -18,6 +18,12 @@ namespace MLLJET001 {
         int sampleRate;
         double duration;
     public:
+        Audio(std::vector<T> & data, int sampleRate) {
+            this->bitSize = (int) sizeof(T);
+            this->sampleRate = sampleRate;
+            audioData = data;
+        }
+
         Audio(std::string file, int sampleRate) {
             this->bitSize = (int) sizeof(T);
             this->sampleRate = sampleRate;
@@ -65,12 +71,18 @@ namespace MLLJET001 {
             if (infile.is_open()) {
                 infile.seekg (0, infile.end);
                 long length = infile.tellg();
+                infile.seekg (0, infile.beg);
+
                 int numSamples = (int) (length / (bitSize * numChannels));
                 duration = numSamples / (float) sampleRate;
 
                 audioData.resize((unsigned long) (numSamples));
-                infile.seekg (0, infile.beg);
-                infile.read((char *)&(audioData[0]), numSamples);
+
+                for (int i = 0; i < audioData.size(); ++i) {
+                    char buffer[bitSize];
+                    infile.read(buffer, bitSize);
+                    audioData[i] = *(T *)buffer;
+                }
             } else {
                 std::cout << "Couldn't open file: " << file << std::endl;
             }
@@ -83,9 +95,7 @@ namespace MLLJET001 {
             std::ofstream outfile(fileName, std::ios::binary | std::ios::out);
 
             if (outfile.is_open()) {
-                for (auto data : audioData) {
-                    outfile << data;
-                }
+                outfile.write((char *)&audioData[0], audioData.size() * bitSize);
             } else {
                 std::cout << "Couldn't save file: " << fileName << std::endl;
             }
@@ -134,9 +144,15 @@ namespace MLLJET001 {
             std::reverse(audioData.begin(), audioData.end());
         }
 
+        std::vector<T> & getAudioData() {
+            return audioData;
+        }
+
         Audio & extractRange(int r1, int r2) {
             Audio * newAudio = new Audio(*this);
-            std::copy(audioData.begin() + r1, audioData.end() - r2, (*newAudio).audioData.begin());
+            newAudio->audioData.clear();
+            newAudio->audioData.resize((unsigned long) (r2 - r1));
+            std::copy(audioData.begin() + r1, audioData.begin() + r2, newAudio->audioData.begin());
             return *newAudio;
         }
 
@@ -221,20 +237,20 @@ namespace MLLJET001 {
             if (infile.is_open()) {
                 infile.seekg (0, infile.end);
                 long length = infile.tellg();
+                infile.seekg (0, infile.beg);
+
                 int numSamples = (int) (length / (bitSize * 2));
                 std::cout << numSamples << std::endl;
                 duration = numSamples / sampleRate;
 
-                infile.seekg (0, infile.beg);
-
-                T * temp = new T[numSamples * 2];
-                infile.read((char *)temp, numSamples * 2);
-
                 audioData.resize((unsigned long) (numSamples));
-                for (int i = 0; i < numSamples; ++i) {
-                    audioData[i] = std::make_pair(temp[i], temp[i+1]);
+                for (int i = 0; i < audioData.size(); ++i) {
+                    char buffer[bitSize];
+                    infile.read(buffer, bitSize);
+                    char buffer2[bitSize];
+                    infile.read(buffer2, bitSize);
+                    audioData[i] = std::make_pair(*(T *)buffer, *(T *)buffer2);
                 }
-                delete [] temp;
             } else {
                 std::cout << "Couldn't open file: " << file << std::endl;
             }
@@ -248,7 +264,8 @@ namespace MLLJET001 {
 
             if (outfile.is_open()) {
                 for (auto data : audioData) {
-                    outfile << data.first << data.second;
+                    outfile.write((char *)&data.first, bitSize);
+                    outfile.write((char *)&data.second, bitSize);
                 }
             } else {
                 std::cout << "Couldn't save file: " << fileName << std::endl;
@@ -316,7 +333,9 @@ namespace MLLJET001 {
 
         Audio & extractRange(int r1, int r2) {
             Audio<T, 2> * newAudio = new Audio(*this);
-            std::copy(audioData.begin() + r1, audioData.end() - r2, (*newAudio).audioData.begin());
+            newAudio->audioData.clear();
+            newAudio->audioData.resize((unsigned long) (r2 - r1));
+            std::copy(audioData.begin() + r1, audioData.begin() + r2, newAudio->audioData.begin());
             return *newAudio;
         }
 
