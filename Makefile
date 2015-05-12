@@ -18,3 +18,9 @@ clean:
 
 run: default
 	cd ./build && ./$(EXE_NAME) $(ARGS)
+
+unit_tests.o:
+	$(CC) -c unit_tests.cpp -o unit_tests.o $(FLAGS)
+
+run-tests: unit_tests.o
+	$(CC) unit_tests.o -o build/unit_tests $(FLAGS)

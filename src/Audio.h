@@ -210,7 +210,7 @@ namespace MLLJET001 {
         double duration;
     public:
         // Constructor for testing.
-        Audio(std::vector<T> & data, int sampleRate) {
+        Audio(std::vector<std::pair<T, T>> & data, int sampleRate) {
             this->tSize = (int) sizeof(T);
             this->sampleRate = sampleRate;
             audioData = data;
@@ -369,6 +369,10 @@ namespace MLLJET001 {
             Audio<T, 2> * newAudio = new Audio(*this);
             std::transform(audioData.begin(), audioData.end(), newAudio->audioData.begin(), func);
             return *newAudio;
+        }
+
+        std::vector<std::pair<T, T>> & getAudioData() {
+            return audioData;
         }
 
         class NormalFunctor {
